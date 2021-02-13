@@ -1,127 +1,125 @@
-package com.example.kashiconnect3;
+package com.example.braintrainer;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.gridlayout.widget.GridLayout;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    //yellow=0, red=1, empty=2
-
-    int[] gameState = {2, 2, 2, 2, 2, 2, 2, 2, 2};
-
-    int[][] winningPositions = {{0,1,2}, {3,4,5}, {6,7,8}, {0,3,6}, {1,4,7}, {2,5,8}, {0,4,8}, {2,4,6}};
-
-    int activePlayer = 0;
-
-    boolean gameActive = true;
-
-    public void dropIn(View view){
-        ImageView counter = (ImageView) view;
-
-
-        int tappedCounter = Integer.parseInt(counter.getTag().toString());
-
-        if(gameState[tappedCounter] == 2 && gameActive) {
-
-            gameState[tappedCounter] = activePlayer;
-
-            counter.setTranslationY(-1500);
-
-            if (activePlayer == 0) {
-
-                counter.setImageResource(R.drawable.yellow);
-                activePlayer = 1;
-
-            } else {
-
-                counter.setImageResource(R.drawable.red);
-                activePlayer = 0;
-            }
-
-            counter.animate().translationYBy(1500).rotation(3600).setDuration(300);
-
-            for (int[] winningPosition : winningPositions) {
-
-                String winner = "nobody ";
-                if (gameState[winningPosition[0]] == gameState[winningPosition[1]] && gameState[winningPosition[1]] == gameState[winningPosition[2]] && gameState[winningPosition[0]] != 2 ) {
-
-                    //someone has won
-
-                    gameActive = false;
-
-
-                    if (activePlayer == 1) {
-
-                        winner = "yellow";
-
-                    } else {
-
-                        winner = "red";
-
-                    }
-                //Toast.makeText(this, winner + " has won!", Toast.LENGTH_SHORT).show();
-
-                Button playAgainButton = (Button) findViewById(R.id.playAgainButton);
-
-                TextView winnerTextView = (TextView) findViewById(R.id.winnerTextView);
-
-                winnerTextView.setText(winner + " has won!");
-
-                playAgainButton.setVisibility(View.VISIBLE);
-
-                winnerTextView.setVisibility(View.VISIBLE);
-
-
-                }
-
-
-                }
-            }
-
-        }
-
-
+    Button goButton;
+    ArrayList<Integer> answers = new ArrayList<Integer>();
+    int locationOfCorrectAnswer;
+    TextView resultTextview;
+    int score = 0;
+    int numberOfquestions = 0;
+    TextView scoreTextView;
+    Button button0;
+    Button button1;
+    Button button2;
+    Button button3;
+    TextView sumTextView;
+    TextView timerTextView;
+    Button playAgainButton;
+    ConstraintLayout gameLayout;
 
     public void playAgain(View view){
 
-        Button playAgainButton = (Button) findViewById(R.id.playAgainButton);
-
-        TextView winnerTextView = (TextView) findViewById(R.id.winnerTextView);
-
+        score = 0;
+        numberOfquestions = 0;
+        timerTextView.setText("30s");
+        scoreTextView.setText(Integer.toString(score)+ "/" + Integer.toString(numberOfquestions));
+        newQuestion();
         playAgainButton.setVisibility(View.INVISIBLE);
+        resultTextview.setText("");
 
-        winnerTextView.setVisibility(View.INVISIBLE);
-
-        Log.i("info", "hello");
-
-        //GridLayout gridLayout = (GridLayout) findViewById(R.id.gridLayout);
-        GridLayout gridLayout = (GridLayout) findViewById(R.id.gridLayout);
+        new CountDownTimer(30100, 1000){
 
 
-        for(int i=0; i<gridLayout.getChildCount(); i++){
+            @Override
+            public void onTick(long l) {
 
-            ImageView counter = (ImageView) gridLayout.getChildAt(i);
+                timerTextView.setText(String.valueOf(l/1000) + "s");
 
-            counter.setImageDrawable(null);
+            }
 
+            @Override
+            public void onFinish() {
+
+                resultTextview.setText("DONE!");
+                playAgainButton.setVisibility(View.VISIBLE);
+
+            }
+        }.start();
+
+
+    }
+
+
+    public void chooseAnswer(View view){
+       if(Integer.toString(locationOfCorrectAnswer).equals( view.getTag().toString())){
+
+           resultTextview.setText("CORRECT!");
+           score++;
+       }else {
+           resultTextview.setText("WRONG :(");
+       }
+
+       numberOfquestions++;
+       scoreTextView.setText(Integer.toString(score)+ "/" + Integer.toString(numberOfquestions));
+       newQuestion();
+    }
+
+    public void start(View view){
+
+        goButton.setVisibility(View.INVISIBLE);
+        gameLayout.setVisibility(View.VISIBLE);
+        playAgain(findViewById(R.id.timerTextview));
+
+    }
+
+    public void newQuestion(){
+
+        Random rand = new Random();
+
+        int a = rand.nextInt(21);
+        int b = rand.nextInt(21);
+
+        sumTextView.setText(Integer.toString(a) + " + " + Integer.toString(b));
+
+        locationOfCorrectAnswer = rand.nextInt(4);
+        answers.clear();
+
+        for(int i=0; i<4; i++){
+
+            if(i == locationOfCorrectAnswer){
+
+                answers.add(a+b);
+
+            }else {
+
+                int wrongAnswer = rand.nextInt(41);
+
+                while (wrongAnswer == a+b){
+
+                    wrongAnswer = rand.nextInt(41);
+                }
+                answers.add(wrongAnswer);
+
+            }
         }
-
-        for(int i=0; i<gameState.length; i++){
-
-            gameState[i] = 2;
-        }
-         activePlayer = 0;
-
-         gameActive = true;
-
+        button0.setText(Integer.toString(answers.get(0)));
+        button1.setText(Integer.toString(answers.get(1)));
+        button2.setText(Integer.toString(answers.get(2)));
+        button3.setText(Integer.toString(answers.get(3)));
 
     }
 
@@ -129,5 +127,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sumTextView = findViewById(R.id.sumTextView);
+        button0 = findViewById(R.id.button0);
+        button1 = findViewById(R.id.button1);
+        button2 = findViewById(R.id.button2);
+        button3 = findViewById(R.id.button3);
+        resultTextview = findViewById(R.id.resultTextView);
+        scoreTextView = findViewById(R.id.scoreTextView);
+        timerTextView = findViewById(R.id.timerTextview);
+        playAgainButton = findViewById(R.id.playAgainButton);
+        gameLayout = findViewById(R.id.gameLayout);
+
+        goButton = findViewById(R.id.goButton);
+
+        goButton.setVisibility(View.VISIBLE);
+        gameLayout.setVisibility(View.INVISIBLE);
+
+
+
+
+
+
+
     }
 }
